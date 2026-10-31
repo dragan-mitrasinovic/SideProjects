@@ -9,13 +9,17 @@
 
 SideProjects is a single-project monorepo for an **app generator**: a self-hosted platform where a prompt
 produces a generated, deployed, public static web app at `<app>.<PLATFORM_DOMAIN>`. The prototype design
-is [ADR-0003](adr/0003-prototype-architecture.md). The platform service is a single Rust binary that
+is [ADR-0003](adr/0003-prototype-architecture.md). The platform service is a single Go binary that
 drives the Copilot CLI (ADR-0003). Progress is tracked in
-[`ROADMAP.md`](ROADMAP.md). No application code exists yet. So far the repo holds project guidelines,
-decision records and agent tooling.
+[`ROADMAP.md`](ROADMAP.md). The Go module lives in `platform/`. So far it holds only the Copilot runner;
+the HTTP service and job runner don't exist yet.
 
 ## Components
 
+- **Copilot runner** — [`platform/internal/copilot`](../platform/internal/copilot/copilot.go): runs
+  one `copilot -p` process in an app's folder and streams its JSONL output line by line. It passes
+  only `PATH`, `HOME` and `COPILOT_GITHUB_TOKEN` to the process, starts it in its own process group,
+  and kills that group on timeout, on cancellation and after the run. Standard library only. (ADR-0003)
 - **Agent instructions** — [`AGENTS.md`](../AGENTS.md), loaded automatically by coding
   agents every session. (ADR-0002)
 - **Architecture doc** — this file; living description of the current system. (ADR-0002)
@@ -30,3 +34,5 @@ decision records and agent tooling.
 - `docs/ARCHITECTURE.md` — this file
 - `docs/ROADMAP.md` — milestones
 - `docs/adr/` — architecture decision records + index
+- `platform/` — the Go module (`github.com/dragan-mitrasinovic/SideProjects/platform`)
+  - `internal/copilot/` — Copilot runner

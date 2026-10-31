@@ -17,12 +17,12 @@ The constraints:
 - **A personal GitHub Copilot account** with a large allowance generates the code. Copilot bills per
   token, in GitHub AI Credits (1 credit = $0.01).
 - **The owner's own domain** hosts the platform.
-- **The owner wants to write the service in Rust.**
+- **The owner wants to write the service in Go.**
 - **Simplicity first:** build the smallest prototype that works, and decide the rest as we go.
 
 ## Decision
 
-We will build the prototype as **one Rust platform service on the VM** that generates and hosts
+We will build the prototype as **one Go platform service on the VM** that generates and hosts
 **public static web apps**.
 
 - **Apps are static sites, for now.** Each app starts from a fixed template (Vite, React, TypeScript,
@@ -33,15 +33,16 @@ We will build the prototype as **one Rust platform service on the VM** that gene
   `<app>.<PLATFORM_DOMAIN>`. The service reads the `Host` header to pick the app's folder. A wildcard
   DNS record points every app subdomain at the VM, so creating an app needs only a folder and a
   database row: no DNS or proxy change.
-- **The service is written in Rust:**
-  - `axum` + `tokio` for HTTP;
-  - `tower-http` `ServeDir` for app files, falling back to `index.html`;
-  - `rusqlite` with the `bundled` feature;
-  - `tokio::process` for `copilot`, `npm` and `git`;
-  - config from `std::env`: `PLATFORM_DOMAIN`, `PLATFORM_PORT` and `PLATFORM_DATA_DIR`;
-  - logs to stderr.
+- **The service is written in Go, using the standard library wherever it's enough:**
+  - `net/http` for HTTP, with the `ServeMux` routing patterns from Go 1.22;
+  - `http.FileServerFS` over an `os.Root` for app files, so paths and symlinks can't escape the
+    app's folder, falling back to `index.html`;
+  - `modernc.org/sqlite` (pure Go, no cgo) through `database/sql`;
+  - `os/exec` with `exec.CommandContext` for `copilot`, `npm` and `git`;
+  - config from `os.Getenv`: `PLATFORM_DOMAIN`, `PLATFORM_PORT` and `PLATFORM_DATA_DIR`;
+  - logs to stderr with `log/slog`.
 
-  The platform UI is plain HTML and JS, embedded in the binary.
+  The platform UI is plain HTML and JS, embedded in the binary with `embed`.
 - **Caddy sits in front.** It gets Let's Encrypt certificates on demand, after asking the platform service
   whether a hostname is a real app. It asks for a password (basic auth) on the platform host only,
   until friends get a real login.
@@ -61,15 +62,17 @@ We will build the prototype as **one Rust platform service on the VM** that gene
   that changes `package.json`, is rolled back with git.
 - **SQLite** holds the platform's bookkeeping: apps and jobs.
 - **Caddy and the platform service run directly on the VM** as systemd services. A deploy script
-  builds the service on the VM (`cargo build --release`), which avoids a glibc mismatch with the
-  Arch development machine. No containers, no PaaS.
+  builds a static binary on the development machine (`CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build`)
+  and copies it to the VM, so the VM needs no Go toolchain. No containers, no PaaS.
 - **We deliver in milestones**, tracked in [`ROADMAP.md`](../ROADMAP.md).
 
 ## Alternatives considered
 
-- **Another language (Go, TypeScript): rejected.** The owner wants Rust.
-- **`sqlx` or `diesel`, Rust frontend frameworks, template crates: not now.** They're more machinery
-  than two tables and a few pages need.
+- **Another language (Rust, TypeScript): rejected.** The owner wants Go: it's quicker to write than
+  Rust, and its standard library covers HTTP, processes, JSON and embedding.
+- **A web framework (Gin, Echo, chi), an ORM or query builder (GORM, sqlc), or a frontend framework:
+  not now.** They're more machinery than two tables and a few pages need.
+- **`mattn/go-sqlite3`: rejected.** It needs cgo, which rules out a static cross-compiled binary.
 - **The apex domain for the platform: rejected.** A dedicated subdomain keeps the wildcard DNS record,
   on-demand certificates and generated pages apart from the rest of the domain.
 - **Apps behind the password: rejected.** Static apps run nothing on the server, and basic auth would
@@ -80,7 +83,7 @@ We will build the prototype as **one Rust platform service on the VM** that gene
 - **A PaaS (Coolify, Dokploy, Dokku): not now.** A static app is just a folder; building an image and
   running a container for each one is slower and heavier. The platform also needs direct access to the
   VM. Revisit when apps need databases or servers.
-- **The Rust Copilot SDK (`github-copilot-sdk`), with our own agent tools: not now.** It runs the same
+- **The Copilot SDK for Go (`github.com/github/copilot-sdk/go`), with our own agent tools: not now.** It runs the same
   Copilot runtime as the CLI, with more code. Revisit it, or the CLI's built-in command sandbox, before
   friends can send prompts (see Consequences).
 - **The Copilot coding agent and its Agent Tasks API: rejected.** They need Copilot Business or
@@ -96,10 +99,10 @@ We will build the prototype as **one Rust platform service on the VM** that gene
 
 ## Consequences
 
-- There's one Rust binary to write and run, almost no cost per app, and publishing an app is a folder
-  copy.
-- The VM needs a Rust toolchain, and Node.js 22 or newer for Vite and the Copilot CLI
-  (`npm install -g @github/copilot`).
+- There's one static Go binary to write and run, almost no cost per app, and publishing an app is a
+  folder copy.
+- The development machine needs a supported Go release (1.27 at the time of writing). The VM needs only
+  Node.js 22 or newer, for Vite and the Copilot CLI (`npm install -g @github/copilot`).
 - Ports 80/443 are open, so the VM is exposed to the internet directly. Anything a generated app
   contains is public.
 - **A known gap:** commands that Copilot runs execute as the same user as the CLI, so a determined
