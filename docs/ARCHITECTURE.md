@@ -3,13 +3,14 @@
 > Current state only. For *why* things are the way they are, see the
 > [decision records](adr/README.md).
 >
-> Last updated: 2026-10-24
+> Last updated: 2026-10-31
 
 ## Overview
 
 SideProjects is a single-project monorepo for an **app generator**: a self-hosted platform where a prompt
-produces a generated, deployed static web app. The prototype design is
-[ADR-0003](adr/0003-prototype-architecture.md) (Proposed), and progress is tracked in
+produces a generated, deployed, public static web app at `<app>.<PLATFORM_DOMAIN>`. The prototype design
+is [ADR-0003](adr/0003-prototype-architecture.md). The platform service is a single Rust binary that
+drives the Copilot CLI (ADR-0003). Progress is tracked in
 [`ROADMAP.md`](ROADMAP.md). No application code exists yet. So far the repo holds project guidelines,
 decision records and agent tooling.
 

@@ -6,6 +6,19 @@
 2. Skim the ADR index at [`docs/adr/README.md`](docs/adr/README.md) and read any ADR
    relevant to your task.
 
+## Plans and brainstorming
+
+- Write every plan, proposal or brainstorm to a markdown file in the repo root (e.g.
+  `PLAN-short-topic.md`), and link to it in chat. The user reads plans in the editor, so
+  never put a plan only in chat or inside an `ask_user` form.
+- Plan files are temporary. Nothing in `docs/` links to or mentions them.
+- End the plan with its open questions, each with a recommended answer. Then ask them
+  with a short `ask_user` form that points to the file.
+- Once the user agrees on the plan, write its decisions as an ADR (following the ADR rules
+  below), then delete the plan file.
+- Before planning, check the repo root for an existing plan on the same topic. Continue it
+  instead of starting over.
+
 ## Architecture doc
 
 - `docs/ARCHITECTURE.md` describes the system **as it is now**. Present tense, current

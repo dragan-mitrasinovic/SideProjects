@@ -16,17 +16,17 @@
 
 Code to write:
 
-- **A skeleton for the platform service,** configured through environment variables: domain, port and
-  data folder.
+- **A skeleton for the Rust platform service** (axum), configured through `PLATFORM_DOMAIN`,
+  `PLATFORM_PORT` and `PLATFORM_DATA_DIR`.
 - **Routing by host:**
-  - the apex domain serves a placeholder platform page;
-  - `<app>.<domain>` serves files from `/srv/apps/<app>/`.
+  - `PLATFORM_DOMAIN` (e.g. `apps.example.com`) serves a placeholder platform page behind the password;
+  - `<app>.<PLATFORM_DOMAIN>` serves files from `<data>/apps/<app>/`, publicly.
 
   App names must match `[a-z0-9-]`. Paths can't escape the app's folder, unknown paths fall back to
   `index.html`, and unknown apps get a 404.
 - **An endpoint for Caddy's on-demand certificates,** `/tls-allowed?domain=…`. It's reachable only from
-  the VM itself, and approves only the apex and existing apps.
-- **Deploy files:** a Caddyfile, a systemd unit and a deploy script.
+  the VM itself, and   approves only the platform host and existing apps.
+- **Deploy files:** a Caddyfile, a systemd unit and a deploy script that builds on the VM.
 
 To develop locally, open `http://hello.localhost:<port>`. Browsers send `*.localhost` to your own
 machine, so you don't need a domain or the VM.
@@ -40,7 +40,7 @@ Code to write:
 - **SQLite tables** for apps and jobs.
 - **The job runner,** one job at a time with a 15-minute timeout. Each job:
   1. prepares the app's folder (copying the template, or reusing the app's git repo);
-  2. runs the Copilot CLI and streams its events into the job log;
+  2. runs `copilot -p` (with the flags in ADR-0003) and streams its JSONL events into the job log;
   3. rebuilds the app, and rejects the job if `package.json` changed;
   4. publishes `dist/` (regular files only) and commits, or rolls back with git on failure;
   5. records the credits used.
@@ -57,7 +57,8 @@ To be designed when we get there.
 - A real login to replace the password prompt.
 - Sandboxing the commands Copilot runs: the CLI's built-in sandbox, a container, or the SDK with our own
   tools.
-- How friends' jobs use Copilot: you approve them, friends use their own Copilot, or a paid API key.
+- How friends' jobs use Copilot: friends use their own Copilot token, or a model provider's API key
+  (BYOK). They must not run on the owner's account (ADR-0003). Revisit the Rust Copilot SDK here.
 - A daily job limit per friend.
 
 ## Later, not scheduled
