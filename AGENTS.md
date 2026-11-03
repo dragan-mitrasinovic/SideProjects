@@ -6,6 +6,16 @@
 2. Skim the ADR index at [`docs/adr/README.md`](docs/adr/README.md) and read any ADR
    relevant to your task.
 
+## Installing software and dependencies
+
+- Never install anything without the user's explicit consent in the current
+  conversation. This covers system packages, language runtimes, global or local CLI
+  tools, and throwaway installs in temp directories for research or experiments.
+- Never add, upgrade or remove a project dependency (e.g. in `go.mod` or `package.json`)
+  without the user's explicit consent.
+- When something would need an install, stop and ask with `ask_user`: say what you want to
+  install, where it goes, and why.
+
 ## Plans and brainstorming
 
 - Write every plan, proposal or brainstorm to a markdown file in the repo root (e.g.
@@ -15,7 +25,8 @@
 - End the plan with its open questions, each with a recommended answer. Then ask them
   with a short `ask_user` form that points to the file.
 - Once the user agrees on the plan, write its decisions as an ADR (following the ADR rules
-  below), then delete the plan file.
+  below), then delete the plan file. Exception: a plan with a `## Steps` checklist (used by
+  the Stepwise agent) stays until its last step is ticked, then is deleted.
 - Before planning, check the repo root for an existing plan on the same topic. Continue it
   instead of starting over.
 

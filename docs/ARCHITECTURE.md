@@ -3,7 +3,7 @@
 > Current state only. For *why* things are the way they are, see the
 > [decision records](adr/README.md).
 >
-> Last updated: 2026-10-31
+> Last updated: 2026-11-03
 
 ## Overview
 
@@ -22,6 +22,10 @@ the HTTP service and job runner don't exist yet.
   and kills that group on timeout, on cancellation and after the run. Standard library only. (ADR-0003)
 - **Agent instructions** — [`AGENTS.md`](../AGENTS.md), loaded automatically by coding
   agents every session. (ADR-0002)
+- **Stepwise agent** — [`.github/agents/stepwise.agent.md`](../.github/agents/stepwise.agent.md)
+  and the [`/step`](../.github/prompts/step.prompt.md) prompt. This is an opt-in mode that splits a
+  task into a `## Steps` list in its PLAN file, implements one tiny step per `/step`, and stops for
+  review after each one. (ADR-0004)
 - **Architecture doc** — this file; living description of the current system. (ADR-0002)
 - **Decision records** — [`docs/adr/`](adr/README.md), append-only history of
   architectural decisions. (ADR-0001)
@@ -31,6 +35,7 @@ the HTTP service and job runner don't exist yet.
 ## Directory layout
 
 - `AGENTS.md` — agent instructions
+- `.github/agents/`, `.github/prompts/` — custom agents and prompts
 - `docs/ARCHITECTURE.md` — this file
 - `docs/ROADMAP.md` — milestones
 - `docs/adr/` — architecture decision records + index
