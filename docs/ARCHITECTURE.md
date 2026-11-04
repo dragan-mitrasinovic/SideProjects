@@ -9,8 +9,8 @@ SideProjects is a single-project monorepo for an **app generator**: a self-hoste
 produces a generated, deployed, public static web app at `<app>.<PLATFORM_DOMAIN>`. The prototype design
 is [ADR-0003](adr/0003-prototype-architecture.md). The platform service is a single Go binary that
 drives the Copilot CLI (ADR-0003). Progress is tracked in
-[`ROADMAP.md`](ROADMAP.md). The Go module lives in `platform/`. So far it holds only the Copilot runner;
-the HTTP service and job runner don't exist yet.
+[`ROADMAP.md`](ROADMAP.md). The Go module lives in `platform/`. So far it holds the Copilot runner and
+the app template; the HTTP service and job runner don't exist yet.
 
 ## Components
 
@@ -22,6 +22,13 @@ the HTTP service and job runner don't exist yet.
   process group, which is killed on cancellation and after every run. Errors include the CLI's
   stderr. The caller sets the timeout through `ctx`. Standard library only. Tests use a fake CLI; an
   opt-in smoke test (`COPILOT_SMOKE=1`) runs the real one. (ADR-0003, ADR-0005)
+- **App template** — [`platform/internal/apptemplate`](../platform/internal/apptemplate/apptemplate.go):
+  the files every app starts from, embedded in the binary: a placeholder `index.html` and an
+  `AGENTS.md` with rules for the generating agent (one self-contained `index.html`, no build, CDNs
+  allowed). The CLI loads that `AGENTS.md` from the app's folder, and also from the enclosing git
+  root, so app folders must not live inside this repo. `Copy(dir)` writes the files and never
+  overwrites. For now it's a single HTML file, a shortcut before the Vite template in ADR-0003 (see
+  ROADMAP).
 - **Agent instructions** — [`AGENTS.md`](../AGENTS.md), loaded automatically by coding
   agents every session. (ADR-0002)
 - **Stepwise agent** — [`.github/agents/stepwise.agent.md`](../.github/agents/stepwise.agent.md)
@@ -45,3 +52,4 @@ the HTTP service and job runner don't exist yet.
 - `platform/` — the Go module (`github.com/dragan-mitrasinovic/SideProjects/platform`)
   - `.golangci.yml` — golangci-lint config (blank-line checks only); run `golangci-lint run ./...`
   - `internal/copilot/` — Copilot runner
+  - `internal/apptemplate/` — app template (`files/` is embedded)

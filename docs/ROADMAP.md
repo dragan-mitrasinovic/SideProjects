@@ -28,7 +28,9 @@ Code to write:
 - **Deploy files:** a Caddyfile, a systemd unit and a deploy script that builds a static binary locally
   and copies it to the VM.
 - **The app template:** Vite, React, TypeScript and Tailwind, plus an `AGENTS.md` with the rules for the
-  agent. Its dependencies are installed once and shared by all apps.
+  agent. Its dependencies are installed once and shared by all apps. *For a start, it's a single
+  self-contained `index.html` with no build step (done); we move to Vite once the rest of M1 works
+  end to end.*
 - **SQLite tables** for apps and jobs.
 - **The job runner,** one job at a time with a 15-minute timeout. Each job:
   1. prepares the app's folder (copying the template, or reusing the app's git repo);
