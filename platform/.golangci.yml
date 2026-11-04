@@ -1,0 +1,12 @@
+version: "2"
+
+# Only the blank-line rules from .github/instructions/go-style.instructions.md that a tool can check.
+linters:
+  default: none
+  enable:
+    - wsl_v5
+  settings:
+    wsl_v5:
+      default: none
+      enable:
+        - after-block

@@ -1,6 +1,6 @@
 # 0003. Prototype architecture
 
-- **Status:** Accepted
+- **Status:** Accepted (web fetching superseded by [0005](0005-web-fetching-on.md))
 - **Date:** 2026-10-24
 
 ## Context
